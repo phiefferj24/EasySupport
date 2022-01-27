@@ -14,6 +14,12 @@ function addReactions(client, message, reactions) {
     })
 }
 
+function removeReactions(client, message, reactions) {
+    reactions.forEach(reaction => {
+        message.reactions.remove(reaction.isCustom ? getEmojiFromName(message.guild, reaction.emoji) : reaction.emoji).catch(() => message.channel.send(`Invalid emoji: ${reaction.emoji}`))
+    })
+}
+
 function getEmojiFromName(client, name) {
     let emoji = client.emojis.cache.find(emoji => emoji.name === name)
     if(emoji === null || emoji === undefined) emoji = client.emojis.cache.find(emoji => emoji.id === name)
@@ -21,4 +27,4 @@ function getEmojiFromName(client, name) {
     if(emoji === null || emoji === undefined) emoji = client.emojis.cache.find(emoji => emoji.toString() === name)
     return emoji
 }
-module.exports = { addReactions, getEmojiFromName }
+module.exports = { addReactions, removeReactions, getEmojiFromName }

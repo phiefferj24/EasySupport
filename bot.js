@@ -1,9 +1,11 @@
 const { token } = require('./config.json')
 const responses = require('./responses.json')
-const { addReactions, getEmojiFromName }= require("./reactions.js")
 
+const { addReactions, removeReactions, getEmojiFromName }= require("./reactions.js")
+const database = require("./mongo.js")
 const { Client, Intents, MessageEmbed } = require('discord.js');
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS] });
+const {add} = require("./mongo");
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_MEMBERS], partials: ["REACTION", "MESSAGE", "USER"] });
 
 let prefix = "es:"
 const helpEmojis = [
@@ -12,6 +14,7 @@ const helpEmojis = [
     {emoji: "3️⃣", isCustom: false, onReactionAdded: (message, reaction, user) => {if(user.id !== client.user.id) message.edit({embeds: [responses.help['support-tickets']]}).then(reply => reply.reactions.removeAll())}, onReactionRemoved: (message, reaction, user) => {}},
     {emoji: "4️⃣", isCustom: false, onReactionAdded: (message, reaction, user) => {if(user.id !== client.user.id) message.edit({embeds: [responses.help['reaction-roles']]}).then(reply => reply.reactions.removeAll())}, onReactionRemoved: (message, reaction, user) => {}}
 ]
+
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)
 });
@@ -46,7 +49,54 @@ client.on('messageCreate', message => {
                         message.reply("Invalid command!")
                     }
                     break
+                case "reaction-roles":
+                    if(isValid(command[1])) {
+                        switch(command[1]) {
+                            case "add":
+                                if(isValid(command[2]) && isValid(command[3]) && isValid(command[4])) {
+                                    database.add("reaction-roles", {messageId: command[2], emojiId: getEmojiFromName(client, command[3]).id, roleId: command[4]}).then(() => {message.reply("Reaction added!")})
+                                }
+                                break
+                        }
+                    }
                 default: message.reply("Invalid command!")
+            }
+        }
+    }
+})
+
+client.on('messageReactionAdd', async (addedReaction, user) => {
+    let messageRoles = await database.get("reaction-roles", {messageId: addedReaction.message.id})
+    if(!user.bot) {
+        for (let messageRole in messageRoles) {
+            if (messageRole.emojiId === addedReaction.emoji.id) {
+                let role = addedReaction.message.guild.roles.cache.find(role => role.id === messageRole.roleId)
+                if (role) {
+                    let user = addedReaction.message.guild.members.cache.find(member => member.user.id === user.id)
+                    if (user) {
+                        await user.roles.add(role)
+                        console.log("role added")
+                    } else console.log("error in finding user")
+                }
+                else console.log("error in finding role")
+            }
+        }
+    }
+})
+client.on('messageReactionRemove', async (removedReaction, user) => {
+    let messageRoles = await database.get("reaction-roles", {messageId: removedReaction.message.id})
+    if(!user.bot) {
+        for (let messageRole in messageRoles) {
+            if (messageRole.emojiId === removedReaction.emoji.id) {
+                let role = removedReaction.message.guild.roles.cache.find(role => role.id === messageRole.roleId)
+                if (role) {
+                    let user = removedReaction.message.guild.members.cache.find(member => member.user.id === user.id)
+                    if (user) {
+                        await user.roles.remove(role)
+                        console.log("role removed")
+                    } else console.log("error in finding user")
+                }
+                else console.log("error in finding role")
             }
         }
     }
