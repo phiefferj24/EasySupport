@@ -1,0 +1,33 @@
+{
+  "help": {
+    "main": {
+      "title": "EasySupport Help",
+      "fields": [
+        {"name": "Support Website", "value": "Visit https://www.jimphieffer.com/easysupport/help for help online."},
+        {"name": "Bot Support", "value": "1️⃣ Configuration\n2️⃣ Support Tickets\n3️⃣ Support Threads\n4️⃣ Reaction Roles"}
+      ]
+    },
+    "config": {
+      "title": "Configuration Help",
+      "fields": [
+        {"name": "Commands", "value": " • **config setprefix <value>** - Sets the bot's prefix\n"}
+      ]
+    },
+    "support-tickets": {
+      "title": "Support Tickets Help",
+      "fields": [
+      ]
+    },
+    "support-threads": {
+      "title": "Support Threads Help",
+      "fields": [
+      ]
+    },
+    "reaction-roles": {
+      "title": "Reaction Roles Help",
+      "fields": [
+        {"name": "Commands", "value": " • **reactionroles add <messageID> <emote> <roleID>** - Adds a reaction to the specified message that adds/removes the specified role from the user.\n\n • **reactionroles remove <messageID> <emote>** - Removes the specified reaction from the specified message."}
+      ]
+    }
+  }
+}
